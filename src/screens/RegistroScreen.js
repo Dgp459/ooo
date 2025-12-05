@@ -140,10 +140,19 @@ export default function RegistroScreen({ navigation }) {
       registros.push(registro);
       await AsyncStorage.setItem('registros', JSON.stringify(registros));
       
-      Alert.alert('✅ Sucesso', 'Registro salvo!', [
-        { text: 'Novo', onPress: limparFormulario },
-        { text: 'Ver Registros', onPress: () => navigation.navigate('Lista') }
-      ]);
+     // 🔥 NOVA LÓGICA DE NAVEGAÇÃO 🔥
+if (tipoOcorrencia === 'Queimadura') {
+  // Navega para tela específica de Queimadura
+  navigation.navigate('Queimadura', { 
+    registroBase: registro 
+  });
+} else {
+  // Para outros tipos, mostra alerta normal
+  Alert.alert('✅ Sucesso', 'Registro salvo!', [
+    { text: 'Novo', onPress: limparFormulario },
+    { text: 'Ver Registros', onPress: () => navigation.navigate('Lista') }
+  ]);
+}
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível salvar');
     }
@@ -541,3 +550,51 @@ const styles = StyleSheet.create({
   },
 });
 
+const salvarRegistro = async () => {
+  if (!pontoBase) {
+    Alert.alert('Atenção', 'Preencha o Ponto Base');
+    return;
+  }
+
+  const registro = {
+    id: Date.now(),
+    pontoBase,
+    ome,
+    secao,
+    viatura: {
+      numeroOrdem,
+      tipoViatura,
+    },
+    ocorrencia: {
+      classificacaoGeral,
+      data,
+      numeroAviso,
+      tipoOcorrencia,
+      ocorrencia: ocorrenciaSelecionada,
+    },
+    dataRegistro: new Date().toLocaleString(),
+  };
+
+  try {
+    const registros = JSON.parse(await AsyncStorage.getItem('registros') || '[]');
+    registros.push(registro);
+    await AsyncStorage.setItem('registros', JSON.stringify(registros));
+    
+    // 🔥 AQUI ESTÁ A MUDANÇA! 🔥
+    if (tipoOcorrencia === 'Queimadura') {
+      // Navega para tela específica de Queimadura
+      navigation.navigate('Queimadura', { 
+        registroBase: registro 
+      });
+    } else {
+      // Para outros tipos, mostra alerta normal
+      Alert.alert('✅ Sucesso', 'Registro salvo!', [
+        { text: 'Novo', onPress: limparFormulario },
+        { text: 'Ver Registros', onPress: () => navigation.navigate('Lista') }
+      ]);
+    }
+    
+  } catch (error) {
+    Alert.alert('Erro', 'Não foi possível salvar');
+  }
+};
